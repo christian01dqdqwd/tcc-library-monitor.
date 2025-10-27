@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>TCC Library Monitoring (Offline)</title>
+<style>
+  :root{
+    --bg:#ffffff; --red:#d32f2f; --yellow:#fdd835; --muted:#666;
+    --card-shadow: 0 8px 22px rgba(0,0,0,0.08); --radius:10px;
+    font-family: Inter, system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{ background:var(--bg); margin:0; color:#111; }
+  header{ display:flex; align-items:center; justify-content:space-between; padding:12px 18px; border-bottom:6px solid var(--yellow); position:sticky; top:0; background:#fff; z-index:5;}
+  header h1{ margin:0; display:flex; gap:10px; align-items:center; font-size:20px; }
+  .logo-dot{ width:40px;height:40px;border-radius:10px;background:var(--red); box-shadow:0 8px 20px rgba(211,47,47,0.18); }
+  .btn{ padding:8px 12px; border-radius:10px; border:0; cursor:pointer; box-shadow:var(--card-shadow); font-weight:600; }
+  .btn-primary{ background:var(--red); color:#fff; } .btn-yellow{ background:var(--yellow); color:#111; }
+  .container{ max-width:1100px; margin:26px auto; padding:12px; }
+  .card{ background:#fff; padding:18px; border-radius:var(--radius); box-shadow:var(--card-shadow); margin-bottom:14px;}
+  form .row{ display:flex; gap:10px; margin-bottom:10px; }
+  label{ display:block; font-size:13px; color:var(--muted); margin-bottom:6px; }
+  input[type=text], select { width:100%; padding:10px; border-radius:8px; border:1px solid #eee; font-size:14px;}
+  table{ width:100%; border-collapse:collapse; font-size:13px; margin-top:8px;}
+  th,td{ padding:8px 6px; border-bottom:1px solid #f3f3f3; text-align:left; }
+  .muted{ color:var(--muted); font-size:13px; } .hidden{ display:none; }
+  @media(max-width:800px){ .row{ flex-direction:column; } header h1{ font-size:16px; } }
+  code{ background:#f7f7f7; padding:2px 6px; border-radius:6px; font-size:12px; }
+</style>
+</head>
+<body>
+<header>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="logo-dot" aria-hidden="true"></div>
+    <h1>TCC Library Monitoring</h1>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="muted small">Admin Panel →</div>
+    <button id="openAdmin" class="btn btn-yellow">Admin</button>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- HOME -->
+  <section id="home" class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <h2 style="margin:0 0 6px 0">Welcome — Login or Register</h2>
+        <div class="muted">If not registered, click Register. Users login with Student ID only.</div>
+      </div>
+      <div class="muted small">Theme: White / Red / Yellow</div>
+    </div>
+
+    <div style="display:flex;gap:18px;margin-top:14px;flex-wrap:wrap;">
+      <div style="min-width:260px;flex:1;">
+        <h3>User Login</h3>
+        <form id="loginForm">
+          <label>Student ID</label>
+          <input id="loginId" placeholder="TCC-1234-5678" required />
+          <div style="margin-top:10px;display:flex;gap:8px;">
+            <button class="btn btn-primary" type="submit">Login</button>
+            <button type="button" id="showRegister" class="btn">Register</button>
+          </div>
+        </form>
+      </div>
+      <div style="min-width:260px;flex:1;">
+        <h3>Quick Help</h3>
+        <p class="muted">If Student ID isn't found you'll be asked to register.</p>
+        <p class="muted">Default admin is <code>admin / 1234</code>. Admin must log in to view logs.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- REGISTER -->
+  <section id="register" class="card hidden">
+    <h3>User Registration</h3>
+    <form id="regForm">
+      <div class="row">
+        <div style="flex:1"><label>First Name</label><input id="firstName" required /></div>
+        <div style="max-width:90px"><label>M.I.</label><input id="mi" maxlength="2" /></div>
+        <div style="flex:1"><label>Surname</label><input id="surname" required /></div>
+      </div>
+
+      <div class="row">
+        <div style="flex:2"><label>Student ID (TCC-XXXX-XXXX)</label><input id="studentId" placeholder="TCC-1234-5678" required /></div>
+        <div style="flex:1"><label>Program</label>
+          <select id="program" required><option value="">--select--</option><option>BSCPE</option><option>BSE</option><option>BPA</option><option>BTVTED</option></select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div style="flex:1"><label>Year</label><select id="year" required><option value="">--year--</option><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
+        <div style="flex:1"><label>Section</label><select id="section" required><option value="">--sec--</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option></select></div>
+      </div>
+
+      <div style="margin-top:8px;display:flex;gap:8px">
+        <button class="btn btn-primary" type="submit">Register</button>
+        <button id="cancelRegister" type="button" class="btn">Cancel</button>
+      </div>
+      <p class="muted small" style="margin-top:8px">Student ID must follow <strong>TCC-1234-5678</strong>. IDs must be unique.</p>
+    </form>
+  </section>
+
+  <!-- USER DASHBOARD / ACTIONS -->
+  <section id="dashboard" class="card hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <h3 style="margin:0">Library Activity</h3>
+        <div class="muted">Your actions are recorded. Press <strong>Out</strong> to finish a visit (fills Time-Out).</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div id="popularSummary" class="muted small"></div>
+        <button id="logout" class="btn">Logout</button>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:14px;margin-top:14px;flex-wrap:wrap">
+      <div style="min-width:230px">
+        <button id="btnRead" class="btn btn-primary" style="width:100%;margin-bottom:8px">Read</button>
+        <button id="btnVisit" class="btn" style="width:100%;margin-bottom:8px">Visit</button>
+        <button id="btnBorrow" class="btn" style="width:100%;margin-bottom:8px">Borrow</button>
+        <button id="btnReturn" class="btn" style="width:100%;margin-bottom:8px">Return</button>
+        <button id="btnOut" class="btn btn-yellow" style="width:100%">Out</button>
+      </div>
+
+      <div style="flex:1;min-width:320px">
+        <h4 style="margin:0 0 8px 0">Your Activity Log (latest first)</h4>
+        <div style="max-height:360px;overflow:auto">
+          <table id="logTable"><thead><tr><th>In</th><th>Out</th><th>Action</th><th>Details</th></tr></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:12px">
+      <h4 style="margin:0 0 8px 0">Most popular books (Read & Borrow)</h4>
+      <div id="popularList" class="muted">No data yet.</div>
+    </div>
+  </section>
+
+  <!-- ADMIN PANEL -->
+  <section id="adminPanel" class="card hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <h3 style="margin:0">Admin Panel</h3>
+        <div class="muted">Log in as admin to view and manage data.</div>
+      </div>
+      <div style="display:flex;gap:8px"><button id="closeAdmin" class="btn">Close</button></div>
+    </div>
+
+    <div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap">
+      <div style="min-width:260px;flex:1">
+        <h4>Admin Login / Register</h4>
+        <div>
+          <label>Admin ID</label><input id="adminId" />
+          <label>Password</label><input id="adminPassword" type="password" />
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="adminLoginBtn" class="btn btn-primary">Login</button>
+            <button id="adminRegisterBtn" class="btn">Register Admin</button>
+          </div>
+          <p class="muted small" style="margin-top:8px">Default admin: <code>admin</code> / <code>1234</code></p>
+        </div>
+      </div>
+
+      <div id="adminDataSection" class="hidden" style="flex:2;min-width:320px">
+        <h4>Registered Users</h4>
+        <div style="max-height:180px;overflow:auto">
+          <table id="regTable"><thead><tr><th>Student ID</th><th>Name</th><th>Program</th><th>Year</th><th>Section</th></tr></thead><tbody></tbody></table>
+        </div>
+
+        <h4 style="margin-top:12px">All Logs</h4>
+        <div style="max-height:260px;overflow:auto">
+          <table id="adminLogTable"><thead><tr><th>In</th><th>Out</th><th>Student</th><th>Action</th><th>Details</th></tr></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <div id="adminActions" class="hidden" style="margin-top:14px;display:flex;gap:10px;justify-content:flex-end">
+      <button id="exportCsv" class="btn btn-primary">Export Logs (CSV)</button>
+      <button id="delLogs" class="btn" style="background:#fff;border:1px solid #eee">Delete All Logs</button>
+      <button id="delAllData" class="btn" style="background:#fff;border:1px solid #eee">Delete All Data</button>
+    </div>
+  </section>
+
+  <footer class="muted small" style="margin-top:18px">Save file as <code>library_monitor.html</code> and open in a browser. Data stored in localStorage.</footer>
+</main>
+
+<script>
+/* ---------- Storage keys ---------- */
+const LS_USERS = 'lm_users_final';
+const LS_LOGS = 'lm_logs_final';
+const LS_ADMINS = 'lm_admins_final';
+
+/* ---------- helpers ---------- */
+function load(key){ try{ return JSON.parse(localStorage.getItem(key) || '[]'); }catch(e){ return []; } }
+function save(key, v){ localStorage.setItem(key, JSON.stringify(v)); }
+function nowISO(){ return new Date().toISOString(); }
+function formatLocal(iso){ return iso ? (new Date(iso)).toLocaleString() : '-'; }
+function escapeHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function isValidId(id){ return /^TCC-\d{4}-\d{4}$/.test((id||'').toUpperCase()); }
+
+/* ---------- data ---------- */
+let users = load(LS_USERS);
+let logs = load(LS_LOGS);
+/* logs entries shape:
+  { id: autoId, studentId, firstName, mi, surname, program, year, section, action, details, timeIn, timeOut }
+*/
+let admins = load(LS_ADMINS);
+
+/* ensure default admin */
+if(!admins || admins.length===0){ admins = [{adminId:'admin', pass:'1234'}]; save(LS_ADMINS, admins); }
+
+/* ---------- UI refs ---------- */
+const home = document.getElementById('home'), register = document.getElementById('register'),
+      dashboard = document.getElementById('dashboard'), adminPanel = document.getElementById('adminPanel');
+
+const showRegisterBtn = document.getElementById('showRegister'), cancelRegisterBtn = document.getElementById('cancelRegister');
+const regForm = document.getElementById('regForm'), loginForm = document.getElementById('loginForm');
+const loginId = document.getElementById('loginId');
+
+const logTableBody = document.querySelector('#logTable tbody');
+const regTableBody = document.querySelector('#regTable tbody');
+const adminLogTableBody = document.querySelector('#adminLogTable tbody');
+const popularListEl = document.getElementById('popularList');
+const popularSummary = document.getElementById('popularSummary');
+
+const openAdminBtn = document.getElementById('openAdmin'), closeAdminBtn = document.getElementById('closeAdmin');
+const adminLoginBtn = document.getElementById('adminLoginBtn'), adminRegisterBtn = document.getElementById('adminRegisterBtn');
+const adminIdInput = document.getElementById('adminId'), adminPassInput = document.getElementById('adminPassword');
+const adminDataSection = document.getElementById('adminDataSection'), adminActions = document.getElementById('adminActions');
+
+const exportCsvBtn = document.getElementById('exportCsv'), delLogsBtn = document.getElementById('delLogs'), delAllDataBtn = document.getElementById('delAllData');
+
+let currentUser = null, currentAdmin = null;
+function showSection(sec){ [home, register, dashboard, adminPanel].forEach(s=> s.classList.add('hidden')); sec.classList.remove('hidden'); }
+
+/* ---------- Registration ---------- */
+showRegisterBtn.addEventListener('click', ()=> showSection(register));
+cancelRegisterBtn.addEventListener('click', ()=> showSection(home));
+regForm.addEventListener('submit', (e)=>{
+  e.preventDefault();
+  const firstName = document.getElementById('firstName').value.trim();
+  const mi = document.getElementById('mi').value.trim();
+  const surname = document.getElementById('surname').value.trim();
+  const studentId = document.getElementById('studentId').value.trim().toUpperCase();
+  const program = document.getElementById('program').value;
+  const year = document.getElementById('year').value;
+  const section = document.getElementById('section').value;
+
+  if(!isValidId(studentId)){ alert('Student ID must be TCC-1234-5678'); return; }
+  if(users.some(u=> u.id === studentId)){ alert('Student ID already registered'); return; }
+  users.push({ id: studentId, firstName, mi, surname, program, year, section });
+  save(LS_USERS, users);
+  refreshRegisteredTable();
+  alert('Registered. Login with your Student ID.');
+  regForm.reset();
+  showSection(home);
+});
+
+/* ---------- Login (user, no password) ---------- */
+loginForm.addEventListener('submit', (e)=>{
+  e.preventDefault();
+  const id = loginId.value.trim().toUpperCase();
+  if(!isValidId(id)){ alert('Enter Student ID in format TCC-1234-5678'); return; }
+  const found = users.find(u=> u.id === id);
+  if(!found){ alert('Please register first.'); return; }
+  currentUser = found;
+  showUserDashboard();
+});
+
+/* ---------- Show user dashboard ---------- */
+function showUserDashboard(){
+  showSection(dashboard);
+  renderUserLogs();
+  renderPopularBooks();
+}
+
+/* ---------- Actions: create record (In) ---------- */
+function createRecord(user, action, details=''){
+  const rec = {
+    id: 'r' + Date.now() + Math.floor(Math.random()*1000),
+    studentId: user.id, firstName: user.firstName, mi: user.mi, surname: user.surname,
+    program: user.program, year: user.year, section: user.section,
+    action, details, timeIn: nowISO(), timeOut: null
+  };
+  logs.push(rec);
+  save(LS_LOGS, logs);
+  return rec;
+}
+
+/* ---------- Buttons ---------- */
+document.getElementById('btnRead').addEventListener('click', ()=>{
+  createRecord(currentUser, 'Read', '');
+  renderUserLogs();
+  renderPopularBooks();
+});
+document.getElementById('btnVisit').addEventListener('click', ()=>{
+  createRecord(currentUser, 'Visit', '');
+  renderUserLogs();
+});
+document.getElementById('btnBorrow').addEventListener('click', ()=>{
+  const book = prompt('Enter book name you are borrowing:');
+  if(book && book.trim()){ createRecord(currentUser, 'Borrow', book.trim()); renderUserLogs(); renderPopularBooks(); }
+});
+document.getElementById('btnReturn').addEventListener('click', ()=>{
+  const book = prompt('Enter book name you are returning:');
+  if(book && book.trim()){ createRecord(currentUser, 'Return', book.trim()); renderUserLogs(); }
+});
+
+/* ---------- OUT logic: set timeOut on last open record for this student ---------- */
+document.getElementById('btnOut').addEventListener('click', ()=>{
+  // find last record for this student with null timeOut
+  logs = load(LS_LOGS);
+  for(let i = logs.length - 1; i >= 0; i--){
+    const r = logs[i];
+    if(r.studentId === currentUser.id && !r.timeOut){
+      r.timeOut = nowISO();
+      save(LS_LOGS, logs);
+      renderUserLogs();
+      if(currentAdmin) renderAdminTables();
+      return;
+    }
+  }
+  // no open record found -> create a quick in/out record
+  const rec = {
+    id: 'r' + Date.now() + Math.floor(Math.random()*1000),
+    studentId: currentUser.id, firstName: currentUser.firstName, mi: currentUser.mi, surname: currentUser.surname,
+    program: currentUser.program, year: currentUser.year, section: currentUser.section,
+    action: 'Out (no open record)', details: '', timeIn: nowISO(), timeOut: nowISO()
+  };
+  logs.push(rec); save(LS_LOGS, logs); renderUserLogs(); if(currentAdmin) renderAdminTables();
+});
+
+/* ---------- Render user's own logs (latest first) ---------- */
+function renderUserLogs(){
+  logs = load(LS_LOGS);
+  const userLogs = logs.filter(r => r.studentId === currentUser.id).slice().reverse();
+  logTableBody.innerHTML = '';
+  for(const r of userLogs){
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${formatLocal(r.timeIn)}</td><td>${formatLocal(r.timeOut)}</td><td>${escapeHtml(r.action)}</td><td>${escapeHtml(r.details||'-')}</td>`;
+    logTableBody.appendChild(tr);
+  }
+}
+
+/* ---------- Popular books ---------- */
+function renderPopularBooks(){
+  logs = load(LS_LOGS);
+  const counts = {};
+  for(const r of logs){
+    if(!r.details) continue;
+    const k = r.details.toLowerCase();
+    if(!counts[k]) counts[k] = { title: r.details, read:0, borrow:0 };
+    if(r.action === 'Read') counts[k].read++;
+    if(r.action === 'Borrow') counts[k].borrow++;
+  }
+  const arr = Object.values(counts).sort((a,b)=> (b.read + b.borrow) - (a.read + a.borrow));
+  if(arr.length === 0){ popularListEl.textContent='No books recorded yet.'; popularSummary.textContent=''; return; }
+  const topN = 3;
+  popularListEl.innerHTML = arr.slice(0,topN).map(x=> `<div><strong>${escapeHtml(x.title)}</strong> — Read:${x.read} Borrow:${x.borrow}</div>`).join('');
+  popularSummary.textContent = `Top ${Math.min(topN,arr.length)}: ${escapeHtml(arr[0].title)}`;
+}
+
+/* ---------- Logout ---------- */
+document.getElementById('logout').addEventListener('click', ()=>{ currentUser = null; showSection(home); });
+
+/* ---------- Admin panel open/close ---------- */
+openAdminBtn.addEventListener('click', ()=>{ showSection(adminPanel); adminDataSection.classList.add('hidden'); adminActions.classList.add('hidden'); refreshRegisteredTable(); renderAdminTables(); });
+closeAdminBtn.addEventListener('click', ()=> showSection(home));
+
+/* ---------- Admin register/login ---------- */
+adminRegisterBtn.addEventListener('click', ()=>{
+  const aId = adminIdInput.value.trim(); const aPass = adminPassInput.value;
+  if(!aId || !aPass){ alert('Enter admin id and password'); return; }
+  if(admins.some(a=> a.adminId === aId)){ alert('Admin exists'); return; }
+  admins.push({adminId:aId, pass:aPass}); save(LS_ADMINS, admins); alert('Admin registered.'); 
+});
+adminLoginBtn.addEventListener('click', ()=>{
+  const aId = adminIdInput.value.trim(); const aPass = adminPassInput.value;
+  const found = admins.find(a=> a.adminId === aId);
+  if(!found){ alert('No such admin'); return; }
+  if(found.pass !== aPass){ alert('Wrong password'); return; }
+  currentAdmin = found; alert('Admin logged in'); adminDataSection.classList.remove('hidden'); adminActions.classList.remove('hidden'); refreshRegisteredTable(); renderAdminTables();
+});
+
+/* ---------- Registered users table (admin) ---------- */
+function refreshRegisteredTable(){ users = load(LS_USERS); regTableBody.innerHTML=''; for(const u of users){ const tr=document.createElement('tr'); tr.innerHTML=`<td>${u.id}</td><td>${escapeHtml(u.firstName+' '+(u.mi?u.mi+' ':'')+u.surname)}</td><td>${u.program}</td><td>${u.year}</td><td>${u.section}</td>`; regTableBody.appendChild(tr);} }
+
+/* ---------- Admin logs table ---------- */
+function renderAdminTables(){ logs = load(LS_LOGS); adminLogTableBody.innerHTML=''; const sorted = logs.slice().reverse(); for(const r of sorted){ const tr=document.createElement('tr'); tr.innerHTML = `<td>${formatLocal(r.timeIn)}</td><td>${formatLocal(r.timeOut)}</td><td>${r.studentId}</td><td>${escapeHtml(r.action)}</td><td>${escapeHtml(r.details||'-')}</td>`; adminLogTableBody.appendChild(tr);} }
+
+/* ---------- Export CSV ---------- */
+function toCSV(arr){ if(!arr || !arr.length) return ''; const keys = Object.keys(arr[0]); const rows=[keys.join(',')]; for(const o of arr) rows.push(keys.map(k=>`"${String(o[k]||'').replace(/"/g,'""')}"`).join(',')); return rows.join('\n'); }
+exportCsvBtn.addEventListener('click', ()=>{
+  if(!currentAdmin && !confirm('Not logged as admin. Continue export?')) return;
+  const data = logs.map(l => ({ timeIn: l.timeIn, timeOut: l.timeOut, studentId: l.studentId, action: l.action, details: l.details, name: `${l.firstName} ${l.mi?l.mi+' ':''}${l.surname}`, program: l.program, year: l.year, section: l.section }));
+  const csv = toCSV(data);
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'}); const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = `library_logs_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+});
+
+/* ---------- Delete logs / delete all ---------- */
+delLogsBtn.addEventListener('click', ()=>{
+  if(!currentAdmin && !confirm('Not admin. Continue?')) return;
+  if(!confirm('Delete ALL logs? This cannot be undone.')) return;
+  logs = []; save(LS_LOGS, logs); renderAdminTables(); renderPopularBooks(); alert('Logs cleared.');
+});
+delAllDataBtn.addEventListener('click', ()=>{
+  if(!currentAdmin && !confirm('Not admin. Continue?')) return;
+  if(!confirm('Delete ALL data (users, logs, admins)? This is irreversible.')) return;
+  users = []; logs = []; admins = []; save(LS_USERS, users); save(LS_LOGS, logs); save(LS_ADMINS, admins);
+  // restore default admin
+  admins = [{adminId:'admin', pass:'1234'}]; save(LS_ADMINS, admins);
+  refreshRegisteredTable(); renderAdminTables(); renderPopularBooks(); alert('All data removed.');
+});
+
+/* ---------- init ---------- */
+(function init(){
+  save(LS_USERS, users); save(LS_LOGS, logs); save(LS_ADMINS, admins);
+  showSection(home);
+  renderPopularBooks();
+})();
+</script>
+</body>
+</html>
